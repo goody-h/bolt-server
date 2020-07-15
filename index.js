@@ -10,6 +10,7 @@ var uuid     = require('node-uuid');
 var express =  require('express');
 var app = require('express')();
 var bodyParser = require('body-parser');
+const Paystack = require('paystack');
 
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
@@ -27,7 +28,7 @@ res.send('<body><head><link href="favicon.ico" rel="shortcut icon" />\
     </p></body></html>');
 });
 
-app.get('/new-access-code', function(req, res) {
+app.get('/init-ride-charge', function(req, res) {
     var customerid = req.params.customerid;
     var cartid     = req.params.cartid;
     // you can then look up customer and cart details in a db etc
@@ -38,17 +39,22 @@ app.get('/new-access-code', function(req, res) {
     }
     email = process.env.SAMPLE_EMAIL;
 
+    var ref = req.body.invoice.id;
+
     // all fields supported by this call can be gleaned from
     // https://developers.paystack.co/reference#initialize-a-transaction
     paystack.transaction.initialize({
-        email:     email,        // a valid email address
-        amount:    amountinkobo, // only kobo and must be integer
+        email:     req.body.user.email,        // a valid email address
+        amount:    req.body.invoice.amount, // only kobo and must be integer
+        firstname: req.body.user.firstname,
+        lastname: req.body.user.lastname,
+        reference: ref,
         metadata:  {
             custom_fields:[
                 {
                     "display_name":"Started From",
                     "variable_name":"started_from",
-                    "value":"sample charge card backend"
+                    "value":"BOLT backend"
                 },
                 {
                     "display_name":"Requested by",
@@ -67,11 +73,11 @@ app.get('/new-access-code', function(req, res) {
             res.send({error:error});
             return;
         }
-        res.send(body.data.access_code);
+        res.send({code: body.data.access_code, ref: ref});
     });
 });
 
-app.get('/verify/:reference', function(req, res) {
+app.get('/verify-and-authorize-ride/:reference', function(req, res) {
     var reference = req.params.reference;
 
     paystack.transaction.verify(reference,
@@ -84,7 +90,7 @@ app.get('/verify/:reference', function(req, res) {
             // save authorization
             var auth = body.authorization;
         }
-        res.send(body.data.gateway_response);
+        res.send({message: body.data.gateway_response, rideId: reference});
     });
 });
 
