@@ -46,10 +46,13 @@ app.post('/init-ride-charge', function(req, res) {
     paystack.transaction.initialize({
         email:     req.body.user.email,        // a valid email address
         amount:    req.body.invoice.amount, // only kobo and must be integer
-        firstname: req.body.user.firstname,
-        lastname: req.body.user.lastname,
         reference: ref,
         metadata:  {
+            first_Name: req.body.user.firstname,
+            last_Name: req.body.user.lastname,
+            custom_filters: {
+                recurring: true
+            },
             custom_fields:[
                 {
                     "display_name":"Started From",
@@ -73,7 +76,7 @@ app.post('/init-ride-charge', function(req, res) {
             res.status(500).send({error:error});
             return;
         }
-        res.json({code: body.data.access_code, ref: ref});
+        res.json({code: body.data.access_code, ref: ref, body: body});
     });
 });
 
@@ -90,7 +93,7 @@ app.post('/verify-and-authorize-ride/:reference', function(req, res) {
             // save authorization
             var auth = body.authorization;
         }
-        res.json({message: body.data.gateway_response, rideId: reference});
+        res.json({message: body.data.gateway_response, rideId: reference, body: body});
     });
 });
 
