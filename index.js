@@ -70,7 +70,7 @@ app.post('/init-ride-charge', function(req, res) {
         }
     },function(error, body) {
         if(error){
-            res.send({error:error});
+            res.status(500).send({error:error});
             return;
         }
         res.json({code: body.data.access_code, ref: ref});
@@ -83,7 +83,7 @@ app.post('/verify-and-authorize-ride/:reference', function(req, res) {
     paystack.transaction.verify(reference,
         function(error, body) {
         if(error){
-            res.send({error:error});
+            res.status(500).send({error:error});
             return;
         }
         if(body.data.success){
