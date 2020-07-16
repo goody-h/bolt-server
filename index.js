@@ -47,6 +47,8 @@ app.post('/init-ride-charge', function(req, res) {
         email:     req.body.user.email,        // a valid email address
         amount:    req.body.invoice.amount, // only kobo and must be integer
         reference: ref,
+        first_name: req.body.user.firstname,
+        last_name: req.body.user.lastname,    
         metadata:  {
             first_name: req.body.user.firstname,
             last_name: req.body.user.lastname,
