@@ -28,6 +28,7 @@ res.send('<body><head><link href="favicon.ico" rel="shortcut icon" />\
     </p></body></html>');
 });
 
+// any error from here signifies the need for a new invoice
 app.post('/init-ride-charge', function(req, res) {
     var customerid = req.params.customerid;
     var cartid     = req.params.cartid;
@@ -47,8 +48,6 @@ app.post('/init-ride-charge', function(req, res) {
         email:     req.body.user.email,        // a valid email address
         amount:    req.body.invoice.amount, // only kobo and must be integer
         reference: ref,
-        first_name: req.body.user.firstname,
-        last_name: req.body.user.lastname,    
         metadata:  {
             first_name: req.body.user.firstname,
             last_name: req.body.user.lastname,
@@ -75,10 +74,13 @@ app.post('/init-ride-charge', function(req, res) {
         }
     },function(error, body) {
         if(error){
-            res.status(500).send({error:error});
+            res.status(500).json({error: error, extra: { ref: ref }});
+            return;
+        } else if (!body.data.access_code) {
+            res.status(501).json({error: { message: "Error retreiving access code"}, extra: { ref: ref }});
             return;
         }
-        res.json({code: body.data.access_code, ref: ref, body: body});
+        res.json({data: { code: body.data.access_code }, extra: { ref: ref, message: body.message }});
     });
 });
 
@@ -88,14 +90,18 @@ app.post('/verify-and-authorize-ride/:reference', function(req, res) {
     paystack.transaction.verify(reference,
         function(error, body) {
         if(error){
-            res.status(500).send({error:error});
+            res.status(500).send({error:error, extra: { ref: reference }});
             return;
         }
-        if(body.data.status = "success"){
+        if(body.data.status === "success"){
             // save authorization
             var auth = body.authorization;
+            res.json({ data: {rideId: reference}, extra: { message: body.data.gateway_response, ref: reference }});
+            return;
+        } else {
+            res.status(400).json({error: { message: body.data.gateway_response }, extra: { ref: reference }});
+            return;
         }
-        res.json({message: body.data.gateway_response, rideId: reference, body: body});
     });
 });
 
