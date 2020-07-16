@@ -73,7 +73,7 @@ app.get('/init-ride-charge', function(req, res) {
             res.send({error:error});
             return;
         }
-        res.send({code: body.data.access_code, ref: ref});
+        res.json({code: body.data.access_code, ref: ref});
     });
 });
 
@@ -90,7 +90,7 @@ app.get('/verify-and-authorize-ride/:reference', function(req, res) {
             // save authorization
             var auth = body.authorization;
         }
-        res.send({message: body.data.gateway_response, rideId: reference});
+        res.json({message: body.data.gateway_response, rideId: reference});
     });
 });
 
