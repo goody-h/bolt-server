@@ -28,7 +28,7 @@ res.send('<body><head><link href="favicon.ico" rel="shortcut icon" />\
     </p></body></html>');
 });
 
-app.get('/init-ride-charge', function(req, res) {
+app.post('/init-ride-charge', function(req, res) {
     var customerid = req.params.customerid;
     var cartid     = req.params.cartid;
     // you can then look up customer and cart details in a db etc
@@ -77,7 +77,7 @@ app.get('/init-ride-charge', function(req, res) {
     });
 });
 
-app.get('/verify-and-authorize-ride/:reference', function(req, res) {
+app.post('/verify-and-authorize-ride/:reference', function(req, res) {
     var reference = req.params.reference;
 
     paystack.transaction.verify(reference,
