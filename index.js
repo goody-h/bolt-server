@@ -48,8 +48,8 @@ app.post('/init-ride-charge', function(req, res) {
         amount:    req.body.invoice.amount, // only kobo and must be integer
         reference: ref,
         metadata:  {
-            first_Name: req.body.user.firstname,
-            last_Name: req.body.user.lastname,
+            first_name: req.body.user.firstname,
+            last_name: req.body.user.lastname,
             custom_filters: {
                 recurring: true
             },
@@ -89,7 +89,7 @@ app.post('/verify-and-authorize-ride/:reference', function(req, res) {
             res.status(500).send({error:error});
             return;
         }
-        if(body.data.success){
+        if(body.data.status = "success"){
             // save authorization
             var auth = body.authorization;
         }
